@@ -2651,8 +2651,111 @@ function DashboardPage({ progress, setProgress, setPage, setFocusDay }) {
           </div>
         </div>
 
+        {/* ── STUDY ANALYTICS STRIP ── */}
+        <div style={{ ...S.card, marginTop: "clamp(12px,1.5vw,18px)" }}>
+          <div style={{ ...S.flexBetween, marginBottom: 16 }}>
+            <div style={S.label}>Study Analytics</div>
+            <div style={{ fontSize: 10, color: C.muted }}>Klik hari → buka sesi · Data real-time</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "clamp(16px,2vw,28px)" }}>
+
+            {/* Activity Heatmap — 26 hari */}
+            <div>
+              <div style={{ fontSize: 9, color: C.faint, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }}>Activity Map — 26 Hari</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(13, 1fr)", gap: "clamp(3px,0.4vw,6px)" }}>
+                {CURRICULUM.map(d => {
+                  const p = progress[d.day] || { tasks: {} };
+                  const dn = Object.values(p.tasks).filter(Boolean).length;
+                  const tt = d.tasks.length;
+                  const pct = tt > 0 ? Math.round((dn / tt) * 100) : 0;
+                  const soal = (progress[d.day] || {}).soalCount || 0;
+                  const color = pct === 100 ? C.up : pct >= 67 ? C.gold : pct >= 34 ? C.warn : pct > 0 ? C.down : null;
+                  const isCur = d.day === curDay;
+                  return (
+                    <div key={d.day}
+                      onClick={() => { setFocusDay(d.day); setPage("focus"); }}
+                      title={`Day ${d.day}: ${pct}% selesai · ${soal} soal`}
+                      style={{
+                        aspectRatio: "1", borderRadius: "clamp(4px,0.5vw,7px)", cursor: "pointer",
+                        background: color ? `${color}1a` : "rgba(240,238,233,0.04)",
+                        border: `1px solid ${isCur ? C.goldLine : (color ? `${color}44` : "rgba(240,238,233,0.07)")}`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: "clamp(7px,0.7vw,10px)", fontWeight: 600,
+                        color: color || C.faint,
+                        transition: "all .12s", position: "relative",
+                        boxShadow: isCur ? `0 0 8px ${C.gold}55` : "none",
+                        outline: isCur ? `2px solid ${C.gold}66` : "none", outlineOffset: 1,
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.22)"; e.currentTarget.style.zIndex = "5"; e.currentTarget.style.position = "relative"; e.currentTarget.style.background = color ? `${color}33` : "rgba(240,238,233,0.1)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.zIndex = "auto"; e.currentTarget.style.background = color ? `${color}1a` : "rgba(240,238,233,0.04)"; }}>
+                      {d.day}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", gap: "clamp(6px,0.8vw,10px)", marginTop: 8, flexWrap: "wrap" }}>
+                {[["Belum", null], ["<34%", C.down], ["34–66%", C.warn], ["67–99%", C.gold], ["100%", C.up]].map(([label, color]) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 8, color: C.faint }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: color ? `${color}1a` : "rgba(240,238,233,0.04)", border: `1px solid ${color ? `${color}44` : "rgba(240,238,233,0.1)"}` }} />
+                    {label}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Soal Leaderboard */}
+            <div>
+              <div style={{ fontSize: 9, color: C.faint, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }}>Top Hari — Soal</div>
+              {(() => {
+                const soalData = CURRICULUM.map(d => ({ day: d.day, soal: (progress[d.day] || {}).soalCount || 0 }))
+                  .filter(d => d.soal > 0).sort((a, b) => b.soal - a.soal).slice(0, 7);
+                const maxSoal = Math.max(...soalData.map(d => d.soal), 1);
+                if (soalData.length === 0) return <div style={{ fontSize: 10, color: C.faint, paddingTop: 8 }}>Belum ada data.</div>;
+                return soalData.map((d, rank) => (
+                  <div key={d.day} onClick={() => { setFocusDay(d.day); setPage("focus"); }}
+                    style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7, cursor: "pointer" }}>
+                    <div style={{ fontSize: 8, color: rank === 0 ? C.gold : C.faint, width: 12, flexShrink: 0, fontWeight: 700 }}>#{rank + 1}</div>
+                    <div style={{ fontSize: 9, color: C.muted, width: 20, flexShrink: 0 }}>D{d.day}</div>
+                    <div style={{ flex: 1, height: 5, background: "rgba(240,238,233,0.06)", borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ width: `${(d.soal / maxSoal) * 100}%`, height: "100%", background: rank === 0 ? `linear-gradient(90deg, ${C.gold}88, ${C.gold})` : `linear-gradient(90deg, ${C.muted}44, ${C.muted}88)`, borderRadius: 4 }} />
+                    </div>
+                    <div style={{ fontSize: 9, color: rank === 0 ? C.gold : C.muted, width: 22, textAlign: "right", fontWeight: 600 }}>{d.soal}</div>
+                  </div>
+                ));
+              })()}
+            </div>
+
+            {/* Phase Progress */}
+            <div>
+              <div style={{ fontSize: 9, color: C.faint, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }}>Phase Progress</div>
+              {PHASES.map(phase => {
+                const total = phase.days.length;
+                const done = phase.days.filter(d => {
+                  const p = progress[d] || { tasks: {} };
+                  const tasks = CURRICULUM.find(c => c.day === d)?.tasks || [];
+                  return tasks.length > 0 && Object.values(p.tasks).filter(Boolean).length === tasks.length;
+                }).length;
+                const pct = Math.round((done / total) * 100);
+                return (
+                  <div key={phase.name} style={{ marginBottom: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                      <span style={{ fontSize: 10, color: phase.color, fontWeight: 600, letterSpacing: "0.04em" }}>{phase.label}</span>
+                      <span style={{ fontSize: 9, color: C.muted }}>{done}/{total} hari</span>
+                    </div>
+                    <div style={{ height: 6, background: "rgba(240,238,233,0.06)", borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ width: `${pct}%`, height: "100%", background: phase.color, borderRadius: 4, transition: "width 0.8s ease", boxShadow: pct > 0 ? `0 0 6px ${phase.color}55` : "none" }} />
+                    </div>
+                    <div style={{ fontSize: 8, color: C.faint, marginTop: 2 }}>{pct}% complete</div>
+                  </div>
+                );
+              })}
+            </div>
+
+          </div>
+        </div>
+
         {/* ── DASHBOARD WIDGET ROW — 4 PER ROW ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginTop: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginTop: "clamp(12px,1.5vw,18px)" }}>
           <PomodoroWidget />
           <DailySoalTracker progress={progress} setProgress={setProgress} />
           <div style={{ ...S.card, padding: "14px 16px" }}>
@@ -3796,6 +3899,108 @@ Gunakan bahasa Indonesia. Presisi, tidak berlebihan.`;
               <button onClick={generateReport} disabled={loading} style={{ ...S.btn(), width: "100%", opacity: loading ? 0.5 : 1 }}>
                 {loading ? "Generating..." : savedReports[selectedDay] ? "Regenerate Laporan" : "Generate Laporan"}
               </button>
+            </div>
+
+            {/* ── INTERACTIVE PROGRESS HEATMAP ── */}
+            <div style={S.card}>
+              <div style={{ ...S.flexBetween, marginBottom: 14 }}>
+                <div style={S.label}>Progress Harian</div>
+                <div style={{ fontSize: 10, color: C.muted }}>Klik hari → pilih laporan</div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(13, 1fr)", gap: "clamp(3px,0.4vw,6px)" }}>
+                {CURRICULUM.map(d => {
+                  const p = progress[d.day] || { tasks: {} };
+                  const dn = Object.values(p.tasks).filter(Boolean).length;
+                  const tt = d.tasks.length;
+                  const pct = tt > 0 ? Math.round((dn / tt) * 100) : 0;
+                  const hasSaved = !!savedReports[d.day];
+                  const color = pct === 100 ? C.up : pct >= 67 ? C.gold : pct >= 34 ? C.warn : pct > 0 ? C.down : null;
+                  const isSel = selectedDay === d.day;
+                  return (
+                    <div key={d.day} onClick={() => setSelectedDay(d.day)}
+                      title={`Day ${d.day}: ${pct}% selesai · ${(progress[d.day] || {}).soalCount || 0} soal · ${hasSaved ? "✓ laporan tersimpan" : "belum ada laporan"}`}
+                      style={{
+                        aspectRatio: "1", borderRadius: "clamp(4px,0.5vw,7px)", cursor: "pointer",
+                        background: isSel ? C.goldDim : (color ? `${color}1a` : "rgba(240,238,233,0.04)"),
+                        border: `1px solid ${isSel ? C.goldLine : (color ? `${color}44` : "rgba(240,238,233,0.07)")}`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: "clamp(7px,0.8vw,10px)", fontWeight: isSel ? 700 : 400,
+                        color: isSel ? C.gold : (color || C.faint),
+                        transition: "all .12s", position: "relative",
+                        transform: isSel ? "scale(1.12)" : "scale(1)",
+                        boxShadow: isSel ? `0 0 10px ${C.gold}44` : "none",
+                      }}
+                      onMouseEnter={e => { if (!isSel) { e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.borderColor = color ? `${color}66` : C.faint; } }}
+                      onMouseLeave={e => { if (!isSel) { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.borderColor = color ? `${color}44` : "rgba(240,238,233,0.07)"; } }}>
+                      {d.day}
+                      {hasSaved && <div style={{ position: "absolute", top: 1, right: 1, width: 3, height: 3, borderRadius: "50%", background: C.gold }} />}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", gap: "clamp(6px,1vw,12px)", marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
+                {[["Belum", null], ["<34%", C.down], ["34–66%", C.warn], ["67–99%", C.gold], ["100%", C.up]].map(([label, color]) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: C.faint }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: color ? `${color}1a` : "rgba(240,238,233,0.04)", border: `1px solid ${color ? `${color}44` : "rgba(240,238,233,0.1)"}` }} />
+                    {label}
+                  </div>
+                ))}
+                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: C.faint }}>
+                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.gold }} /> Laporan tersimpan
+                </div>
+              </div>
+            </div>
+
+            {/* ── QUICK SUMMARY STATS ── */}
+            <div style={S.card}>
+              <div style={{ ...S.label, marginBottom: 14 }}>Ringkasan Total</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "clamp(8px,1vw,12px)" }}>
+                {(() => {
+                  const totalSoal = Object.values(progress).reduce((a, p) => a + (p.soalCount || 0), 0);
+                  const activeDays = Object.keys(progress).filter(d => Object.values(progress[d]?.tasks || {}).some(Boolean)).length;
+                  const savedCount = Object.keys(savedReports).length;
+                  const avgUnderstanding = (() => {
+                    const days = Object.values(progress).filter(p => SUBTES.some(s => (p.understanding?.[s.id] || 0) > 0));
+                    if (days.length === 0) return 0;
+                    return Math.round(days.reduce((total, p) => total + SUBTES.reduce((a, s) => a + (p.understanding?.[s.id] || 0), 0) / SUBTES.length, 0) / days.length);
+                  })();
+                  return [
+                    { label: "Total Soal", val: totalSoal, color: C.gold, sub: "dikerjakan" },
+                    { label: "Hari Aktif", val: `${activeDays}/26`, color: C.up, sub: "hari produktif" },
+                    { label: "Avg Paham", val: `${avgUnderstanding}%`, color: avgUnderstanding > 70 ? C.up : avgUnderstanding > 40 ? C.warn : C.gold, sub: "semua subtes" },
+                  ].map((stat, i) => (
+                    <div key={i} style={{ textAlign: "center", padding: "clamp(10px,1.2vw,16px) 8px", background: "rgba(240,238,233,0.03)", borderRadius: 10, border: "1px solid rgba(240,238,233,0.06)" }}>
+                      <div style={{ fontFamily: F.display, fontSize: "clamp(20px,2.2vw,28px)", fontWeight: 600, color: stat.color }}>{stat.val}</div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: stat.color, opacity: 0.8, marginTop: 2 }}>{stat.label}</div>
+                      <div style={{ fontSize: 9, color: C.faint, marginTop: 1 }}>{stat.sub}</div>
+                    </div>
+                  ));
+                })()}
+              </div>
+              {/* Soal per-day mini bars */}
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(240,238,233,0.06)" }}>
+                <div style={{ fontSize: 9, color: C.faint, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }}>Soal per Hari</div>
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 40 }}>
+                  {CURRICULUM.map(d => {
+                    const soal = (progress[d.day] || {}).soalCount || 0;
+                    const maxSoal = Math.max(...CURRICULUM.map(c => (progress[c.day] || {}).soalCount || 0), 1);
+                    const h = soal > 0 ? Math.max(4, Math.round((soal / maxSoal) * 38)) : 2;
+                    const isSel = selectedDay === d.day;
+                    return (
+                      <div key={d.day} onClick={() => setSelectedDay(d.day)}
+                        title={`Day ${d.day}: ${soal} soal`}
+                        style={{
+                          flex: 1, height: h, borderRadius: "2px 2px 0 0", cursor: "pointer",
+                          background: isSel ? C.gold : (soal > 0 ? `${C.gold}44` : "rgba(240,238,233,0.06)"),
+                          transition: "all .15s",
+                          alignSelf: "flex-end",
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = C.gold; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = isSel ? C.gold : (soal > 0 ? `${C.gold}44` : "rgba(240,238,233,0.06)"); }} />
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
 
