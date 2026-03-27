@@ -2648,6 +2648,63 @@ function DashboardPage({ progress, setProgress, setPage, setFocusDay }) {
             <DailyInsightWidget progress={progress} />
             <WarRoomQuote curDay={curDay} />
             <SidebarMiniMap curDay={curDay} setFocusDay={setFocusDay} setPage={setPage} progress={progress} />
+
+            {/* Subtes Prioritas — sorted by lowest understanding */}
+            <div style={{ ...S.cardSm }}>
+              <div style={{ ...S.label, marginBottom: 10 }}>Prioritas Subtes</div>
+              {[...SUBTES].map(s => {
+                const vals = Object.values(progress).map(p => p.understanding?.[s.id] || 0).filter(v => v > 0);
+                return { ...s, avg: vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0 };
+              }).sort((a, b) => a.avg - b.avg).map((s, i) => (
+                <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: "50%", flexShrink: 0, background: i < 2 ? C.down : i < 4 ? C.warn : C.up }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                      <span style={{ fontSize: 10, color: i < 2 ? C.cream : C.muted, fontWeight: i < 2 ? 600 : 400 }}>{s.short}</span>
+                      <span style={{ fontSize: 10, color: s.avg > 70 ? C.up : s.avg > 40 ? C.warn : s.avg > 0 ? C.down : C.faint, fontWeight: 600 }}>{s.avg}%</span>
+                    </div>
+                    <div style={{ height: 3, background: "rgba(240,238,233,0.06)", borderRadius: 3, overflow: "hidden" }}>
+                      <div style={{ width: `${s.avg}%`, height: "100%", background: s.avg > 70 ? C.up : s.avg > 40 ? C.warn : s.avg > 0 ? C.down : "transparent", borderRadius: 3, transition: "width 0.6s ease" }} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Hari Ini — quick snapshot */}
+            <div style={{ ...S.cardSm }}>
+              <div style={{ ...S.label, marginBottom: 10 }}>Day {curDay} — Snapshot</div>
+              {(() => {
+                const tp = progress[curDay] || { tasks: {}, soalCount: 0, understanding: {} };
+                const tDone = Object.values(tp.tasks || {}).filter(Boolean).length;
+                const tTotal = CURRICULUM.find(d => d.day === curDay)?.tasks.length || 0;
+                const tSoal = tp.soalCount || 0;
+                const tUnder = Math.round(SUBTES.reduce((a, s) => a + (tp.understanding?.[s.id] || 0), 0) / SUBTES.length);
+                const tPct = tTotal > 0 ? Math.round((tDone / tTotal) * 100) : 0;
+                return (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {[
+                      { label: "Tasks", val: `${tDone}/${tTotal}`, color: tDone === tTotal && tTotal > 0 ? C.up : C.gold, pct: tPct },
+                      { label: "Pemahaman", val: `${tUnder}%`, color: tUnder > 70 ? C.up : tUnder > 40 ? C.warn : C.muted, pct: tUnder },
+                    ].map(item => (
+                      <div key={item.label}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                          <span style={{ fontSize: 10, color: C.muted }}>{item.label}</span>
+                          <span style={{ fontSize: 10, color: item.color, fontWeight: 600 }}>{item.val}</span>
+                        </div>
+                        <div style={{ height: 4, background: "rgba(240,238,233,0.06)", borderRadius: 3, overflow: "hidden" }}>
+                          <div style={{ width: `${item.pct}%`, height: "100%", background: item.color, borderRadius: 3, transition: "width 0.6s ease", boxShadow: item.pct > 0 ? `0 0 6px ${item.color}55` : "none" }} />
+                        </div>
+                      </div>
+                    ))}
+                    <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 4, borderTop: "1px solid rgba(240,238,233,0.05)" }}>
+                      <span style={{ fontSize: 10, color: C.muted }}>Soal dikerjakan</span>
+                      <span style={{ fontFamily: F.display, fontSize: 14, color: C.gold, fontWeight: 600 }}>{tSoal}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         </div>
 
@@ -4048,6 +4105,44 @@ Gunakan bahasa Indonesia. Presisi, tidak berlebihan.`;
                 ))}
               </div>
             )}
+
+            {/* Day vs Avg — always visible */}
+            <div style={S.card}>
+              <div style={{ ...S.flexBetween, marginBottom: 14 }}>
+                <h2 style={S.h2}>Day {selectedDay} vs Avg</h2>
+                <span style={{ fontSize: 10, color: C.muted }}>semua hari</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {SUBTES.map(s => {
+                  const dayVal = prog.understanding?.[s.id] || 0;
+                  const allVals = Object.values(progress).map(p => p.understanding?.[s.id] || 0).filter(v => v > 0);
+                  const avg = allVals.length > 0 ? Math.round(allVals.reduce((a, b) => a + b, 0) / allVals.length) : 0;
+                  const diff = dayVal - avg;
+                  return (
+                    <div key={s.id}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ fontSize: 10, color: s.color, fontWeight: 600 }}>{s.short}</span>
+                        <span style={{ fontSize: 10, color: diff > 0 ? C.up : diff < 0 ? C.down : C.faint, fontWeight: 600 }}>
+                          {dayVal > 0 || avg > 0 ? (diff > 0 ? `+${diff}` : `${diff}`) : "—"}
+                          {(dayVal > 0 || avg > 0) && <span style={{ color: C.faint, fontWeight: 400 }}> (avg {avg}%)</span>}
+                        </span>
+                      </div>
+                      <div style={{ position: "relative", height: 5, background: "rgba(240,238,233,0.06)", borderRadius: 4, overflow: "hidden" }}>
+                        {/* avg bar (background reference) */}
+                        {avg > 0 && <div style={{ position: "absolute", left: 0, width: `${avg}%`, height: "100%", background: "rgba(240,238,233,0.12)", borderRadius: 4 }} />}
+                        {/* this day bar */}
+                        {dayVal > 0 && <div style={{ position: "absolute", left: 0, width: `${dayVal}%`, height: "100%", background: diff >= 0 ? `${C.up}99` : `${C.down}99`, borderRadius: 4, transition: "width 0.6s ease" }} />}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {Object.values(prog.understanding || {}).every(v => !v) && (
+                <div style={{ fontSize: 11, color: C.faint, textAlign: "center", paddingTop: 8 }}>
+                  Belum ada data pemahaman untuk hari ini.
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
