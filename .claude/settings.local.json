@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh auth:*)",
+      "Bash(where gh:*)",
+      "Bash(where vercel:*)",
+      "Bash(vercel --version)",
+      "Bash(npm run:*)"
+    ]
+  }
+}
