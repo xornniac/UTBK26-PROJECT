@@ -1149,7 +1149,15 @@ function CountdownWidget() {
 
 function WeaknessDetector() {
   const toHistory = LS.get("to_history", []);
-  if (toHistory.length === 0) return null;
+  if (toHistory.length === 0) return (
+    <div style={S.card} className="card-hover">
+      <div style={{ ...S.h2, marginBottom: 8 }}>Analisis Subtes</div>
+      <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.7 }}>
+        Belum ada data TO.<br />
+        <span style={{ color: C.faint, fontSize: 10 }}>Upload hasil simulasi untuk melihat analisis kelemahan.</span>
+      </div>
+    </div>
+  );
   const avgs = {};
   SUBTES.forEach(s => {
     const vals = toHistory.map(t => t.scores[s.id] || 0).filter(v => v > 0);
@@ -2920,7 +2928,7 @@ function FocusPage({ progress, setProgress, focusDay }) {
         </div>
 
         {/* ── FOCUS LAYOUT: 2 COLUMN ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 5fr) minmax(320px, 2.5fr)", gap: "clamp(16px, 2vw, 24px)", alignItems: "start" }} className="resp-grid-2-1">
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 5fr) minmax(320px, 2.5fr)", gap: "clamp(16px, 2vw, 24px)", alignItems: "stretch" }} className="resp-grid-2-1">
           
           {/* LEFT: MAIN FOCUS AREA */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -3044,45 +3052,6 @@ function FocusPage({ progress, setProgress, focusDay }) {
               </div>
             </div>
 
-            {/* Bottom Grid for Secondary Info */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginTop: 8 }}>
-              {/* Understanding Sliders */}
-              <div style={S.card}>
-                <div style={{ ...S.flexBetween, marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" }}>Pemahaman Subtes</div>
-                  <span style={{ fontSize: 11, color: C.gold, fontWeight: 600 }}>
-                    {Math.round(SUBTES.reduce((a, s) => (a + (prog.understanding?.[s.id] || 0)), 0) / SUBTES.length)}% avg
-                  </span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {SUBTES.map(s => (
-                    <SliderWithTrack
-                      key={s.id}
-                      label={s.short}
-                      value={prog.understanding?.[s.id] || 0}
-                      onChange={val => updateUnderstanding(s.id, val)}
-                      color={C.gold}
-                      showValue={true}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Notes & Quant */}
-              <div style={{ ...S.card, display: "flex", flexDirection: "column" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 16 }}>Materi & Konsep (Notes)</div>
-                <textarea value={notes} onChange={e => setNotes(e.target.value)} onBlur={saveNotes}
-                  placeholder="Catat insight penting atau rumus baru di sini..."
-                  style={{ ...S.input, flex: 1, minHeight: 80, resize: "none", fontSize: 12, lineHeight: 1.6, background: "rgba(12,12,14,0.4)" }} />
-                
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(240,238,233,0.06)" }}>
-                  <span style={{ fontSize: 11, color: C.muted }}>Soal Dikerjakan Sesi Ini:</span>
-                  <input type="number" value={soalCount} onChange={e => setSoalCount(parseInt(e.target.value) || 0)} onBlur={saveNotes}
-                    style={{ ...S.input, width: 60, padding: "4px 8px", fontSize: 12, textAlign: "center", background: "rgba(12,12,14,0.4)" }} />
-                </div>
-              </div>
-            </div>
-
             {/* War Room Quote Full Width */}
             <div style={{ ...S.cardSm, fontStyle: "italic", fontSize: 12, color: C.muted, lineHeight: 1.65, textAlign: "center", margin: "16px 0", borderTop: `1px solid rgba(240,238,233,0.06)` }}>
               "{cur.quote || QUOTES[(day - 1) % QUOTES.length]}"
@@ -3090,11 +3059,9 @@ function FocusPage({ progress, setProgress, focusDay }) {
 
           </div>
 
-          {/* RIGHT: CLOD AI + widgets stacked — no empty space */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "clamp(8px,1vw,12px)" }}>
-
-            {/* CLOD AI */}
-            <div style={{ ...S.card, display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }} className="glow-ring">
+          {/* RIGHT: CLOD AI — stretches to match left column height */}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ ...S.card, display: "flex", flexDirection: "column", flex: 1, padding: 0, overflow: "hidden", marginBottom: 0 }} className="glow-ring">
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid rgba(240,238,233,0.06)", background: "rgba(240,238,233,0.02)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 24, height: 24, borderRadius: 6, background: C.goldDim, border: `1px solid ${C.goldLine}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>⚡</div>
@@ -3115,7 +3082,8 @@ function FocusPage({ progress, setProgress, focusDay }) {
                   );
                 })}
               </div>
-              <div style={{ height: "clamp(200px,24vh,360px)", overflowY: "auto", display: "flex", flexDirection: "column", gap: 10, padding: "12px 16px" }}>
+              {/* Messages area — flex grows to fill remaining column height */}
+              <div style={{ flex: 1, minHeight: "clamp(200px, 30vh, 500px)", overflowY: "auto", display: "flex", flexDirection: "column", gap: 10, padding: "12px 16px" }}>
                 {chatMessages.map((m, i) => (
                   <div key={i} className="chat-msg-in" style={{ padding: "10px 14px", borderRadius: 12, fontSize: 12, lineHeight: 1.6, background: m.role === "clod" ? C.goldDim : "rgba(240,238,233,0.06)", border: `1px solid ${m.role === "clod" ? C.goldLine : "rgba(240,238,233,0.08)"}`, alignSelf: m.role === "clod" ? "flex-start" : "flex-end", borderBottomLeftRadius: m.role === "clod" ? 4 : 12, borderBottomRightRadius: m.role === "user" ? 4 : 12, maxWidth: "92%", color: C.cream, whiteSpace: "pre-wrap" }}>
                     {m.role === "clod" && <div style={{ fontSize: 9, color: C.gold, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 4, fontWeight: 700 }}>CLOD</div>}
@@ -3134,108 +3102,144 @@ function FocusPage({ progress, setProgress, focusDay }) {
                 <button onClick={sendChat} disabled={isTyping} style={{ background: C.goldLine, color: C.ink, border: "none", borderRadius: 8, padding: "0 14px", fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: isTyping ? 0.5 : 1 }}>↑</button>
               </div>
             </div>
-
-            {/* Pomodoro + Session Stats */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(8px,1vw,12px)" }}>
-              <div style={{ ...S.card, padding: "clamp(10px,1.2vw,14px)", background: pomActive ? `rgba(232,168,56,0.08)` : C.g1, border: `1px solid ${pomActive ? C.warn + "44" : "rgba(240,238,233,0.08)"}`, marginBottom: 0 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" }}>Pomodoro</div>
-                  {pomActive && <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.warn, animation: "btnPulse 1s infinite" }} />
-                    <span style={{ fontSize: 8, color: C.warn, fontWeight: 700 }}>ON</span>
-                  </div>}
-                </div>
-                <div style={{ textAlign: "center", marginBottom: 8 }}>
-                  <div style={{ fontFamily: F.display, fontSize: "clamp(22px,2.2vw,32px)", fontWeight: 700, color: pomActive ? C.warn : C.cream, fontVariantNumeric: "tabular-nums", letterSpacing: "2px", lineHeight: 1, textShadow: pomActive ? `0 0 20px ${C.warn}44` : "none" }}>
-                    {String(Math.floor(pomTime / 60)).padStart(2, "0")}:{String(pomTime % 60).padStart(2, "0")}
-                  </div>
-                  <div style={{ height: 3, background: "rgba(240,238,233,0.06)", borderRadius: 3, overflow: "hidden", marginTop: 6 }}>
-                    <div style={{ width: `${((pomOriginal - pomTime) / Math.max(1, pomOriginal)) * 100}%`, height: "100%", background: C.warn, borderRadius: 3, transition: "width 1s linear" }} />
-                  </div>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 3, marginBottom: 6 }}>
-                  {[["25", 25*60], ["45", 45*60], ["90", 90*60], ["5", 5*60]].map(([label, secs]) => (
-                    <button key={label} onClick={() => { setPomTime(secs); setPomOriginal(secs); setPomActive(false); }}
-                      style={{ fontSize: 8, padding: "3px 0", borderRadius: 4, background: pomTime === secs ? C.goldDim : "rgba(240,238,233,0.04)", border: `1px solid ${pomTime === secs ? C.goldLine : "rgba(240,238,233,0.08)"}`, color: pomTime === secs ? C.gold : C.muted, cursor: "pointer", fontFamily: F.body, fontWeight: 600 }}>
-                      {label}m
-                    </button>
-                  ))}
-                </div>
-                <div style={{ display: "flex", gap: 4 }}>
-                  <button onClick={() => setPomActive(!pomActive)} style={{ flex: 2, ...S.btn(pomActive ? C.warn : C.up), padding: "6px 0", fontSize: 9, borderRadius: 6 }}>{pomActive ? "⏸" : "▶ Start"}</button>
-                  <button onClick={() => { setPomActive(false); setPomTime(pomOriginal); }} style={{ flex: 1, ...S.btnGhost, padding: "6px 0", fontSize: 9, borderRadius: 6 }}>↺</button>
-                </div>
-              </div>
-
-              <div style={{ ...S.card, padding: "clamp(10px,1.2vw,14px)", marginBottom: 0 }}>
-                <div style={{ ...S.label, marginBottom: 8, fontSize: 9 }}>Session Stats</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                  {[
-                    { val: done, label: "Done", color: done === cur.tasks.length && done > 0 ? C.up : C.gold },
-                    { val: cur.tasks.length - done, label: "Left", color: cur.tasks.length - done > 0 ? C.warn : C.up },
-                    { val: prog.soalCount || 0, label: "Soal", color: C.gold },
-                    { val: `${Math.round((done / Math.max(1, cur.tasks.length)) * 100)}%`, label: "Rate", color: C.gold },
-                  ].map((item, i) => (
-                    <div key={i} style={{ textAlign: "center", padding: "6px 4px", background: "rgba(240,238,233,0.03)", borderRadius: 7, border: "1px solid rgba(240,238,233,0.06)" }}>
-                      <div style={{ fontFamily: F.display, fontSize: "clamp(16px,1.8vw,22px)", fontWeight: 600, color: item.color }}>{item.val}</div>
-                      <div style={{ fontSize: 8, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginTop: 2 }}>{item.label}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Schedule + Pemahaman mini */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(8px,1vw,12px)" }}>
-              <div style={{ ...S.card, padding: "clamp(10px,1.2vw,14px)", marginBottom: 0 }}>
-                <div style={{ ...S.label, marginBottom: 8, fontSize: 9 }}>Jadwal Hari Ini</div>
-                {(() => {
-                  const now = new Date(); const hour = now.getHours() + now.getMinutes() / 60;
-                  return schedule.map((s, i) => {
-                    const isActive = hour >= s.h && (i === schedule.length - 1 || hour < schedule[i + 1]?.h);
-                    return (
-                      <div key={i} style={{ display: "flex", gap: 5, alignItems: "center", padding: "2px 0", opacity: hour > s.h + (schedule[i+1] ? schedule[i+1].h - s.h : 2) ? 0.4 : 1 }}>
-                        <div style={{ width: 4, height: 4, borderRadius: "50%", flexShrink: 0, background: isActive ? s.c : "rgba(240,238,233,0.15)", boxShadow: isActive ? `0 0 5px ${s.c}` : "none", animation: isActive ? "btnPulse 1.5s infinite" : "none" }} />
-                        <span style={{ fontSize: 8, color: C.faint, width: 28, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{s.time}</span>
-                        <span style={{ fontSize: 8, color: isActive ? s.c : C.muted, fontWeight: isActive ? 600 : 400, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
-                        {isActive && <span style={{ fontSize: 6, padding: "1px 3px", background: `${s.c}20`, color: s.c, borderRadius: 3, border: `1px solid ${s.c}40`, fontWeight: 700, flexShrink: 0 }}>NOW</span>}
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-
-              <div style={{ ...S.card, padding: "clamp(10px,1.2vw,14px)", marginBottom: 0 }}>
-                <div style={{ ...S.flexBetween, marginBottom: 8 }}>
-                  <div style={{ ...S.label, fontSize: 9 }}>Pemahaman</div>
-                  <span style={{ fontSize: 9, color: C.gold, fontWeight: 600 }}>
-                    {Math.round(SUBTES.reduce((a, s) => a + (prog.understanding?.[s.id] || 0), 0) / SUBTES.length)}%
-                  </span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {SUBTES.map(s => {
-                    const val = prog.understanding?.[s.id] || 0;
-                    return (
-                      <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <div style={{ width: 20, fontSize: 8, fontWeight: 700, color: s.color, flexShrink: 0 }}>{s.short}</div>
-                        <div style={{ flex: 1, height: 4, background: "rgba(240,238,233,0.06)", borderRadius: 4, overflow: "hidden" }}>
-                          <div style={{ width: `${val}%`, height: "100%", background: `linear-gradient(90deg, ${s.color}88, ${s.color})`, borderRadius: 4, transition: "width 0.5s" }} />
-                        </div>
-                        <div style={{ fontSize: 8, color: val > 70 ? C.up : val > 40 ? C.warn : C.faint, width: 20, textAlign: "right", fontWeight: 600 }}>{val}%</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Pre-Session + Energy */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(8px,1vw,12px)" }}>
-              <PreSessionChecklist day={day} />
-              <EnergyWidget />
-            </div>
-
           </div>
+        </div>
+
+        {/* ── BELOW MAIN GRID — full-width rows, no gap ── */}
+        {/* Row 1: Pemahaman Sliders + Notes */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(12px,1.5vw,18px)", marginTop: "clamp(12px,1.5vw,18px)" }}>
+          <div style={S.card}>
+            <div style={{ ...S.flexBetween, marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" }}>Pemahaman Subtes</div>
+              <span style={{ fontSize: 11, color: C.gold, fontWeight: 600 }}>
+                {Math.round(SUBTES.reduce((a, s) => (a + (prog.understanding?.[s.id] || 0)), 0) / SUBTES.length)}% avg
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {SUBTES.map(s => (
+                <SliderWithTrack
+                  key={s.id}
+                  label={s.short}
+                  value={prog.understanding?.[s.id] || 0}
+                  onChange={val => updateUnderstanding(s.id, val)}
+                  color={C.gold}
+                  showValue={true}
+                />
+              ))}
+            </div>
+          </div>
+          <div style={{ ...S.card, display: "flex", flexDirection: "column" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 16 }}>Materi & Konsep (Notes)</div>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} onBlur={saveNotes}
+              placeholder="Catat insight penting atau rumus baru di sini..."
+              style={{ ...S.input, flex: 1, minHeight: 120, resize: "none", fontSize: 12, lineHeight: 1.6, background: "rgba(12,12,14,0.4)" }} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(240,238,233,0.06)" }}>
+              <span style={{ fontSize: 11, color: C.muted }}>Soal Dikerjakan Sesi Ini:</span>
+              <input type="number" value={soalCount} onChange={e => setSoalCount(parseInt(e.target.value) || 0)} onBlur={saveNotes}
+                style={{ ...S.input, width: 60, padding: "4px 8px", fontSize: 12, textAlign: "center", background: "rgba(12,12,14,0.4)" }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Row 2: Pomodoro | Session Stats | Jadwal | Pemahaman mini */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "clamp(12px,1.5vw,18px)", marginTop: "clamp(12px,1.5vw,18px)" }}>
+          {/* Pomodoro */}
+          <div style={{ ...S.card, padding: "clamp(12px,1.4vw,18px)", background: pomActive ? `rgba(232,168,56,0.08)` : C.g1, border: `1px solid ${pomActive ? C.warn + "44" : "rgba(240,238,233,0.08)"}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" }}>Pomodoro</div>
+              {pomActive && <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.warn, animation: "btnPulse 1s infinite" }} />
+                <span style={{ fontSize: 9, color: C.warn, fontWeight: 700 }}>ON</span>
+              </div>}
+            </div>
+            <div style={{ textAlign: "center", marginBottom: 10 }}>
+              <div style={{ fontFamily: F.display, fontSize: "clamp(26px,2.8vw,38px)", fontWeight: 700, color: pomActive ? C.warn : C.cream, fontVariantNumeric: "tabular-nums", letterSpacing: "2px", lineHeight: 1, textShadow: pomActive ? `0 0 20px ${C.warn}44` : "none" }}>
+                {String(Math.floor(pomTime / 60)).padStart(2, "0")}:{String(pomTime % 60).padStart(2, "0")}
+              </div>
+              <div style={{ height: 3, background: "rgba(240,238,233,0.06)", borderRadius: 3, overflow: "hidden", marginTop: 8 }}>
+                <div style={{ width: `${((pomOriginal - pomTime) / Math.max(1, pomOriginal)) * 100}%`, height: "100%", background: C.warn, borderRadius: 3, transition: "width 1s linear" }} />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 3, marginBottom: 8 }}>
+              {[["25", 25*60], ["45", 45*60], ["90", 90*60], ["5", 5*60]].map(([label, secs]) => (
+                <button key={label} onClick={() => { setPomTime(secs); setPomOriginal(secs); setPomActive(false); }}
+                  style={{ fontSize: 9, padding: "4px 0", borderRadius: 5, background: pomTime === secs ? C.goldDim : "rgba(240,238,233,0.04)", border: `1px solid ${pomTime === secs ? C.goldLine : "rgba(240,238,233,0.08)"}`, color: pomTime === secs ? C.gold : C.muted, cursor: "pointer", fontFamily: F.body, fontWeight: 600 }}>
+                  {label}m
+                </button>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 5 }}>
+              <button onClick={() => setPomActive(!pomActive)} style={{ flex: 2, ...S.btn(pomActive ? C.warn : C.up), padding: "7px 0", fontSize: 10, borderRadius: 7 }}>{pomActive ? "⏸" : "▶ Start"}</button>
+              <button onClick={() => { setPomActive(false); setPomTime(pomOriginal); }} style={{ flex: 1, ...S.btnGhost, padding: "7px 0", fontSize: 10, borderRadius: 7 }}>↺</button>
+            </div>
+          </div>
+
+          {/* Session Stats */}
+          <div style={{ ...S.card, padding: "clamp(12px,1.4vw,18px)" }}>
+            <div style={{ ...S.label, marginBottom: 12, fontSize: 10 }}>Session Stats</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {[
+                { val: done, label: "Done", color: done === cur.tasks.length && done > 0 ? C.up : C.gold },
+                { val: cur.tasks.length - done, label: "Left", color: cur.tasks.length - done > 0 ? C.warn : C.up },
+                { val: prog.soalCount || 0, label: "Soal", color: C.gold },
+                { val: `${Math.round((done / Math.max(1, cur.tasks.length)) * 100)}%`, label: "Rate", color: C.gold },
+              ].map((item, i) => (
+                <div key={i} style={{ textAlign: "center", padding: "10px 4px", background: "rgba(240,238,233,0.03)", borderRadius: 8, border: "1px solid rgba(240,238,233,0.06)" }}>
+                  <div style={{ fontFamily: F.display, fontSize: "clamp(18px,2vw,26px)", fontWeight: 600, color: item.color }}>{item.val}</div>
+                  <div style={{ fontSize: 9, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginTop: 2 }}>{item.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Jadwal Hari Ini */}
+          <div style={{ ...S.card, padding: "clamp(12px,1.4vw,18px)" }}>
+            <div style={{ ...S.label, marginBottom: 10, fontSize: 10 }}>Jadwal Hari Ini</div>
+            {(() => {
+              const now = new Date(); const hour = now.getHours() + now.getMinutes() / 60;
+              return schedule.map((s, i) => {
+                const isActive = hour >= s.h && (i === schedule.length - 1 || hour < schedule[i + 1]?.h);
+                return (
+                  <div key={i} style={{ display: "flex", gap: 6, alignItems: "center", padding: "3px 0", opacity: hour > s.h + (schedule[i+1] ? schedule[i+1].h - s.h : 2) ? 0.4 : 1 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: "50%", flexShrink: 0, background: isActive ? s.c : "rgba(240,238,233,0.15)", boxShadow: isActive ? `0 0 5px ${s.c}` : "none", animation: isActive ? "btnPulse 1.5s infinite" : "none" }} />
+                    <span style={{ fontSize: 9, color: C.faint, width: 30, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{s.time}</span>
+                    <span style={{ fontSize: 9, color: isActive ? s.c : C.muted, fontWeight: isActive ? 600 : 400, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
+                    {isActive && <span style={{ fontSize: 7, padding: "1px 4px", background: `${s.c}20`, color: s.c, borderRadius: 3, border: `1px solid ${s.c}40`, fontWeight: 700, flexShrink: 0 }}>NOW</span>}
+                  </div>
+                );
+              });
+            })()}
+          </div>
+
+          {/* Pemahaman mini */}
+          <div style={{ ...S.card, padding: "clamp(12px,1.4vw,18px)" }}>
+            <div style={{ ...S.flexBetween, marginBottom: 10 }}>
+              <div style={{ ...S.label, fontSize: 10 }}>Pemahaman</div>
+              <span style={{ fontSize: 10, color: C.gold, fontWeight: 600 }}>
+                {Math.round(SUBTES.reduce((a, s) => a + (prog.understanding?.[s.id] || 0), 0) / SUBTES.length)}%
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+              {SUBTES.map(s => {
+                const val = prog.understanding?.[s.id] || 0;
+                return (
+                  <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <div style={{ width: 22, fontSize: 9, fontWeight: 700, color: s.color, flexShrink: 0 }}>{s.short}</div>
+                    <div style={{ flex: 1, height: 4, background: "rgba(240,238,233,0.06)", borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ width: `${val}%`, height: "100%", background: `linear-gradient(90deg, ${s.color}88, ${s.color})`, borderRadius: 4, transition: "width 0.5s" }} />
+                    </div>
+                    <div style={{ fontSize: 9, color: val > 70 ? C.up : val > 40 ? C.warn : C.faint, width: 22, textAlign: "right", fontWeight: 600 }}>{val}%</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Row 3: Pre-Session + Energy */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(12px,1.5vw,18px)", marginTop: "clamp(12px,1.5vw,18px)" }}>
+          <PreSessionChecklist day={day} />
+          <EnergyWidget />
         </div>
       </div>
       {showSources && <SourceLinksModal onClose={() => setShowSources(false)} filterDay={day} />}
