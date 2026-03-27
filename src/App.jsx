@@ -3917,7 +3917,7 @@ Gunakan bahasa Indonesia. Presisi, tidak berlebihan.`;
 
         <div style={S.grid2} className="resp-grid-2-1">
           {/* Report generator */}
-          <div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={S.card}>
               <div style={S.flexBetween}>
                 <h2 style={S.h2}>Laporan AI</h2>
@@ -4009,7 +4009,7 @@ Gunakan bahasa Indonesia. Presisi, tidak berlebihan.`;
             </div>
 
             {/* ── QUICK SUMMARY STATS ── */}
-            <div style={S.card}>
+            <div style={{ ...S.card, flex: 1, display: "flex", flexDirection: "column" }}>
               <div style={{ ...S.label, marginBottom: 14 }}>Ringkasan Total</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "clamp(8px,1vw,12px)" }}>
                 {(() => {
@@ -4035,9 +4035,9 @@ Gunakan bahasa Indonesia. Presisi, tidak berlebihan.`;
                 })()}
               </div>
               {/* Soal per-day mini bars */}
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(240,238,233,0.06)" }}>
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(240,238,233,0.06)", flex: 1, display: "flex", flexDirection: "column" }}>
                 <div style={{ fontSize: 9, color: C.faint, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }}>Soal per Hari</div>
-                <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 40 }}>
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 3, flex: 1, minHeight: "clamp(60px,8vh,120px)" }}>
                   {CURRICULUM.map(d => {
                     const soal = (progress[d.day] || {}).soalCount || 0;
                     const maxSoal = Math.max(...CURRICULUM.map(c => (progress[c.day] || {}).soalCount || 0), 1);
@@ -4062,7 +4062,7 @@ Gunakan bahasa Indonesia. Presisi, tidak berlebihan.`;
           </div>
 
           {/* Stats sidebar */}
-          <div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={S.card}>
               <h2 style={S.h2}>Statistik Day {selectedDay}</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -4107,7 +4107,7 @@ Gunakan bahasa Indonesia. Presisi, tidak berlebihan.`;
             )}
 
             {/* Day vs Avg — always visible */}
-            <div style={S.card}>
+            <div style={{ ...S.card, flex: 1, display: "flex", flexDirection: "column" }}>
               <div style={{ ...S.flexBetween, marginBottom: 14 }}>
                 <h2 style={S.h2}>Day {selectedDay} vs Avg</h2>
                 <span style={{ fontSize: 10, color: C.muted }}>semua hari</span>
@@ -4142,6 +4142,21 @@ Gunakan bahasa Indonesia. Presisi, tidak berlebihan.`;
                   Belum ada data pemahaman untuk hari ini.
                 </div>
               )}
+              {/* Catatan hari — fills remaining space */}
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(240,238,233,0.06)", flex: 1, display: "flex", flexDirection: "column" }}>
+                <div style={{ ...S.label, marginBottom: 8, fontSize: 10 }}>Catatan Day {selectedDay}</div>
+                {prog.notes ? (
+                  <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.7, fontStyle: "italic", flex: 1, padding: "10px 12px", background: "rgba(240,238,233,0.02)", borderRadius: 8, border: "1px solid rgba(240,238,233,0.05)" }}>
+                    {prog.notes}
+                  </div>
+                ) : (
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: "20px 0", color: C.faint }}>
+                    <div style={{ fontSize: 22, opacity: 0.2 }}>◇</div>
+                    <div style={{ fontSize: 11 }}>Belum ada catatan.</div>
+                    <div style={{ fontSize: 10, color: C.faint, opacity: 0.6 }}>Tambahkan di halaman Focus.</div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
