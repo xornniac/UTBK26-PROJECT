@@ -2403,7 +2403,7 @@ function DashboardPage({ progress, setProgress, setPage, setFocusDay }) {
         <PhaseBar />
 
         {/* Premium: Streak Fire + Daily Wisdom + Energy */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr 1fr", gap: "clamp(10px,1.4vw,14px)", marginBottom: 20 }} className="resp-grid-6-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "clamp(8px,1.2vw,14px)", marginBottom: 16 }}>
           {/* Streak Fire */}
           <div style={{ ...S.cardSm, display: "flex", alignItems: "center", gap: 14, borderLeft: `2px solid ${streak >= 3 ? C.warn : C.goldLine}` }} className="card-hover">
             <div className={streak >= 3 ? "streak-fire" : ""} style={{ fontSize: 28, lineHeight: 1, flexShrink: 0 }}>{streak >= 7 ? "🔥" : streak >= 3 ? "🔥" : streak >= 1 ? "✦" : "○"}</div>
@@ -2427,7 +2427,7 @@ function DashboardPage({ progress, setProgress, setPage, setFocusDay }) {
         </div>
 
         {/* Stats row */}
-        <div style={{ ...S.grid4, marginBottom: 24 }} className="resp-grid-4-2">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr) repeat(2, 1fr)", gap: "clamp(8px,1vw,12px)", marginBottom: 20 }} className="resp-grid-4-2">
           {[
             { label: "Hari Tersisa", value: daysLeft, color: daysLeft <= 5 ? C.down : C.gold, sub: "/26 hari" },
             { label: "Total Soal", value: totalSoal, color: C.gold, sub: "dikerjakan" },
@@ -2444,7 +2444,7 @@ function DashboardPage({ progress, setProgress, setPage, setFocusDay }) {
         <ExecutiveCalendar progress={progress} setFocusDay={setFocusDay} setPage={setPage} />
 
         {/* ── DASHBOARD: TWO COLUMN WITH STICKY SIDEBAR ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 5fr) minmax(280px, 2.2fr)", gap: "clamp(16px, 2vw, 24px)", alignItems: "start", animation: "fadeSlideIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards" }} className="resp-grid-2-1">
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 300px", gap: "clamp(12px, 1.5vw, 20px)", alignItems: "start", animation: "fadeSlideIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards" }} className="resp-grid-dashboard">
           
           {/* LEFT: MAIN SCROLLABLE DASHBOARD WIDGETS */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -2821,6 +2821,7 @@ function FocusPage({ progress, setProgress, focusDay }) {
   const [soalCount, setSoalCount] = useState(prog.soalCount || 0);
   const [pomTime, setPomTime] = useState(25 * 60);
   const [pomActive, setPomActive] = useState(false);
+  const [pomOriginal, setPomOriginal] = useState(25 * 60);
   const [pomDone, setPomDone] = useState(false);
   // Chat persistence — load from localStorage per day
   const loadChat = (d) => {
@@ -3092,87 +3093,136 @@ function FocusPage({ progress, setProgress, focusDay }) {
 
           </div>
 
-          {/* RIGHT: STICKY CLOD SIDEBAR */}
+          {/* RIGHT: FULL PRODUCTIVITY PANEL */}
           <div style={{
-            display: "flex", flexDirection: "column", gap: 16,
+            display: "flex", flexDirection: "column", gap: 12,
             position: "sticky", top: 16, height: "calc(100vh - 32px)", maxHeight: "calc(100vh - 32px)",
-            overflowY: "auto", overflowX: "hidden", scrollbarWidth: "none", paddingBottom: 16
+            overflowY: "auto", overflowX: "hidden", scrollbarWidth: "thin", paddingBottom: 16
           }}>
-            
-            {/* Minimal Pomodoro Timer at top right */}
-            <div style={{ ...S.card, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: pomActive ? `${C.warn}11` : C.g1, border: `1px solid ${pomActive ? C.warn + '44' : "rgba(240,238,233,0.06)"}` }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 18, fontFamily: F.display, fontWeight: 700, color: pomActive ? C.warn : C.cream, fontVariantNumeric: "tabular-nums" }}>
+            {/* POMODORO — Big & Prominent */}
+            <div style={{ ...S.card, padding: "16px", background: pomActive ? `rgba(232,168,56,0.08)` : C.g1, border: `1px solid ${pomActive ? C.warn + "44" : "rgba(240,238,233,0.08)"}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: "1px", textTransform: "uppercase" }}>Pomodoro</div>
+                {pomActive && <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.warn, animation: "btnPulse 1s infinite" }} />
+                  <span style={{ fontSize: 9, color: C.warn, fontWeight: 700, textTransform: "uppercase" }}>Active</span>
+                </div>}
+              </div>
+              <div style={{ textAlign: "center", marginBottom: 12 }}>
+                <div style={{ fontFamily: F.display, fontSize: "clamp(36px,4vw,48px)", fontWeight: 700, color: pomActive ? C.warn : C.cream, fontVariantNumeric: "tabular-nums", letterSpacing: "2px", lineHeight: 1, textShadow: pomActive ? `0 0 20px ${C.warn}44` : "none" }}>
                   {String(Math.floor(pomTime / 60)).padStart(2, "0")}:{String(pomTime % 60).padStart(2, "0")}
-                </span>
-                {pomActive && <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.warn, animation: "btnPulse 1s infinite alternate" }} />}
+                </div>
+                <div style={{ height: 3, background: "rgba(240,238,233,0.06)", borderRadius: 3, overflow: "hidden", marginTop: 10, marginBottom: 4 }}>
+                  <div style={{ width: `${((pomOriginal - pomTime) / Math.max(1, pomOriginal)) * 100}%`, height: "100%", background: C.warn, borderRadius: 3, transition: "width 1s linear" }} />
+                </div>
+              </div>
+              {/* Preset buttons */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, marginBottom: 10 }}>
+                {[["25", 25*60], ["45", 45*60], ["90", 90*60], ["5", 5*60]].map(([label, secs]) => (
+                  <button key={label} onClick={() => { setPomTime(secs); setPomOriginal(secs); setPomActive(false); }}
+                    style={{ fontSize: 10, padding: "5px 0", borderRadius: 6, background: pomTime === secs ? C.goldDim : "rgba(240,238,233,0.04)", border: `1px solid ${pomTime === secs ? C.goldLine : "rgba(240,238,233,0.08)"}`, color: pomTime === secs ? C.gold : C.muted, cursor: "pointer", fontFamily: F.body, fontWeight: 600 }}>
+                    {label}m
+                  </button>
+                ))}
               </div>
               <div style={{ display: "flex", gap: 6 }}>
-                <button onClick={() => setPomActive(!pomActive)} style={{ ...S.btnGhost, padding: "4px 10px", fontSize: 10, color: pomActive ? C.cream : C.up, background: pomActive ? "rgba(240,238,233,0.1)" : `${C.up}22` }}>{pomActive ? "Pause" : "Start"}</button>
-                <button onClick={() => { setPomActive(false); setPomTime(25 * 60); }} style={{ ...S.btnGhost, padding: "4px 10px", fontSize: 10 }}>Reset</button>
+                <button onClick={() => setPomActive(!pomActive)} style={{ flex: 2, ...S.btn(pomActive ? C.warn : C.up), padding: "8px 0", fontSize: 11, borderRadius: 8 }}>{pomActive ? "⏸ Pause" : "▶ Start"}</button>
+                <button onClick={() => { setPomActive(false); setPomTime(pomOriginal); }} style={{ flex: 1, ...S.btnGhost, padding: "8px 0", fontSize: 11, borderRadius: 8 }}>↺ Reset</button>
               </div>
             </div>
 
-            {/* Pre Session Checklist */}
+            {/* SESSION STATS — 4-cell grid */}
+            <div style={{ ...S.cardSm }}>
+              <div style={{ ...S.label, marginBottom: 8, fontSize: 10 }}>Session Stats — Day {day}</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                {[
+                  { val: done, label: "Tasks Done", color: done === cur.tasks.length && done > 0 ? C.up : C.gold },
+                  { val: cur.tasks.length - done, label: "Remaining", color: cur.tasks.length - done > 0 ? C.warn : C.up },
+                  { val: prog.soalCount || 0, label: "Soal Hari Ini", color: C.gold },
+                  { val: `${Math.round((done / Math.max(1, cur.tasks.length)) * 100)}%`, label: "Completion", color: C.gold },
+                ].map((item, i) => (
+                  <div key={i} style={{ textAlign: "center", padding: "8px 6px", background: "rgba(240,238,233,0.03)", borderRadius: 8, border: "1px solid rgba(240,238,233,0.06)" }}>
+                    <div style={{ fontFamily: F.display, fontSize: 18, fontWeight: 600, color: item.color }}>{item.val}</div>
+                    <div style={{ fontSize: 9, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", marginTop: 2 }}>{item.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* TODAY'S SCHEDULE TIMELINE */}
+            <div style={{ ...S.cardSm }}>
+              <div style={{ ...S.label, marginBottom: 10, fontSize: 10 }}>Jadwal Hari Ini</div>
+              {(() => {
+                const now = new Date(); const hour = now.getHours() + now.getMinutes() / 60;
+                return schedule.map((s, i) => {
+                  const isActive = hour >= s.h && (i === schedule.length - 1 || hour < schedule[i + 1]?.h);
+                  return (
+                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", padding: "4px 0", opacity: hour > s.h + (schedule[i+1] ? schedule[i+1].h - s.h : 2) ? 0.4 : 1 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, background: isActive ? s.c : "rgba(240,238,233,0.15)", boxShadow: isActive ? `0 0 6px ${s.c}` : "none", animation: isActive ? "btnPulse 1.5s infinite" : "none" }} />
+                      <span style={{ fontSize: 9, color: C.faint, width: 32, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{s.time}</span>
+                      <span style={{ fontSize: 10, color: isActive ? s.c : C.muted, fontWeight: isActive ? 600 : 400 }}>{s.label}</span>
+                      {isActive && <span style={{ marginLeft: "auto", fontSize: 8, padding: "1px 5px", background: `${s.c}20`, color: s.c, borderRadius: 4, border: `1px solid ${s.c}40`, fontWeight: 700, flexShrink: 0 }}>NOW</span>}
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+
+            {/* UNDERSTANDING MINI RADAR */}
+            <div style={{ ...S.cardSm }}>
+              <div style={{ ...S.flexBetween, marginBottom: 8 }}>
+                <div style={{ ...S.label, fontSize: 10 }}>Pemahaman Subtes</div>
+                <span style={{ fontSize: 10, color: C.gold, fontWeight: 600 }}>
+                  {Math.round(SUBTES.reduce((a, s) => a + (prog.understanding?.[s.id] || 0), 0) / SUBTES.length)}% avg
+                </span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {SUBTES.map(s => {
+                  const val = prog.understanding?.[s.id] || 0;
+                  return (
+                    <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 24, fontSize: 9, fontWeight: 700, color: s.color, flexShrink: 0 }}>{s.short}</div>
+                      <div style={{ flex: 1, height: 4, background: "rgba(240,238,233,0.06)", borderRadius: 4, overflow: "hidden" }}>
+                        <div style={{ width: `${val}%`, height: "100%", background: `linear-gradient(90deg, ${s.color}99, ${s.color})`, borderRadius: 4, transition: "width 0.5s" }} />
+                      </div>
+                      <div style={{ fontSize: 9, color: val > 70 ? C.up : val > 40 ? C.warn : C.faint, width: 24, textAlign: "right", fontWeight: 600 }}>{val}%</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* PRE-SESSION CHECKLIST */}
             <PreSessionChecklist day={day} />
 
-            {/* Mini Stats Panel */}
-            <div style={{ ...S.cardSm }}>
-              <div style={{ ...S.label, marginBottom: 10, fontSize: 10 }}>Session Stats</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                <div style={{ textAlign: "center", padding: "8px 6px", background: "rgba(240,238,233,0.03)", borderRadius: 8, border: "1px solid rgba(240,238,233,0.06)" }}>
-                  <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 600, color: C.gold }}>{done}</div>
-                  <div style={{ fontSize: 9, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>Tasks Done</div>
-                </div>
-                <div style={{ textAlign: "center", padding: "8px 6px", background: "rgba(240,238,233,0.03)", borderRadius: 8, border: "1px solid rgba(240,238,233,0.06)" }}>
-                  <div style={{ fontFamily: F.display, fontSize: 20, fontWeight: 600, color: C.gold }}>{prog.soalCount || 0}</div>
-                  <div style={{ fontSize: 9, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>Soal</div>
-                </div>
-              </div>
-            </div>
+            {/* ENERGY LEVEL */}
+            <EnergyWidget />
 
-            {/* CLOD MODE AI - Flex 1 to fill space */}
-            <div style={{ ...S.card, display: "flex", flexDirection: "column", flex: 1, minHeight: 480, padding: 0, overflow: "hidden" }} className="glow-ring">
-              {/* Clod Header */}
+            {/* CLOD MODE AI */}
+            <div style={{ ...S.card, display: "flex", flexDirection: "column", flex: 1, minHeight: 400, padding: 0, overflow: "hidden" }} className="glow-ring">
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid rgba(240,238,233,0.06)", background: "rgba(240,238,233,0.02)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 24, height: 24, borderRadius: 6, background: C.goldDim, border: `1px solid ${C.goldLine}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>⚡</div>
                   <div style={{ fontFamily: F.display, fontWeight: 600, fontSize: 12, color: C.cream, letterSpacing: "1px", textTransform: "uppercase" }}>Clod Mode</div>
                   {isTyping && <div style={{ fontSize: 9, color: C.gold, fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", animation: "pulseText 1s infinite alternate" }}>Thinking...</div>}
                 </div>
-                <button onClick={clearChat} style={{ background: "none", border: "none", fontSize: 10, color: C.muted, cursor: "pointer", fontFamily: F.body }} title="Reset Chat">✕ Clear</button>
+                <button onClick={clearChat} style={{ background: "none", border: "none", fontSize: 10, color: C.muted, cursor: "pointer", fontFamily: F.body }}>✕ Clear</button>
               </div>
-
-              {/* Mode Buttons */}
               <div style={{ display: "flex", gap: 2, padding: "8px 12px", background: "rgba(240,238,233,0.01)", borderBottom: "1px solid rgba(240,238,233,0.04)" }}>
                 {["TUTOR", "REVIEW", "DEBUG", "BRIEF", "WRAP-UP"].map(m => {
                   const modeKey = m.replace("-", "");
                   const isActive = chatMode === modeKey;
                   return (
                     <button key={m} onClick={() => triggerModePrompt(modeKey)}
-                      style={{
-                        flex: 1, background: isActive ? C.goldLine : "transparent", color: isActive ? C.bg : C.muted,
-                        border: "none", borderRadius: 4, padding: "4px 0", fontSize: 9, fontWeight: isActive ? 700 : 500,
-                        cursor: "pointer", fontFamily: F.body, letterSpacing: "0.5px", transition: "all .15s"
-                      }}>
+                      style={{ flex: 1, background: isActive ? C.goldLine : "transparent", color: isActive ? C.ink : C.muted, border: "none", borderRadius: 4, padding: "4px 0", fontSize: 9, fontWeight: isActive ? 700 : 500, cursor: "pointer", fontFamily: F.body, transition: "all .15s" }}>
                       {m}
                     </button>
                   );
                 })}
               </div>
-
-              {/* Chat Messages */}
               <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10, padding: "12px 16px" }}>
                 {chatMessages.map((m, i) => (
-                  <div key={i} className="chat-msg-in" style={{
-                    padding: "10px 14px", borderRadius: 12, fontSize: 12, lineHeight: 1.6,
-                    background: m.role === "clod" ? C.goldDim : "rgba(240,238,233,0.06)",
-                    border: `1px solid ${m.role === "clod" ? C.goldLine : "rgba(240,238,233,0.08)"}`,
-                    alignSelf: m.role === "clod" ? "flex-start" : "flex-end",
-                    borderBottomLeftRadius: m.role === "clod" ? 4 : 12,
-                    borderBottomRightRadius: m.role === "user" ? 4 : 12,
-                    maxWidth: "92%", color: C.cream, whiteSpace: "pre-wrap"
-                  }}>
+                  <div key={i} className="chat-msg-in" style={{ padding: "10px 14px", borderRadius: 12, fontSize: 12, lineHeight: 1.6, background: m.role === "clod" ? C.goldDim : "rgba(240,238,233,0.06)", border: `1px solid ${m.role === "clod" ? C.goldLine : "rgba(240,238,233,0.08)"}`, alignSelf: m.role === "clod" ? "flex-start" : "flex-end", borderBottomLeftRadius: m.role === "clod" ? 4 : 12, borderBottomRightRadius: m.role === "user" ? 4 : 12, maxWidth: "92%", color: C.cream, whiteSpace: "pre-wrap" }}>
                     {m.role === "clod" && <div style={{ fontSize: 9, color: C.gold, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 4, fontWeight: 700 }}>CLOD</div>}
                     {m.text}
                   </div>
@@ -3184,25 +3234,11 @@ function FocusPage({ progress, setProgress, focusDay }) {
                 )}
                 <div ref={chatEndRef} />
               </div>
-
-              {/* Chat Input */}
               <div style={{ padding: "12px", borderTop: "1px solid rgba(240,238,233,0.06)", background: "rgba(12,12,14,0.6)", display: "flex", gap: 8 }}>
-                <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendChat()}
-                  placeholder={`Minta saran Clod [${chatMode}]...`} disabled={isTyping}
-                  style={{ ...S.input, flex: 1, fontSize: 12, opacity: isTyping ? 0.5 : 1, padding: "8px 12px", borderRadius: 8 }} />
-                <button onClick={sendChat} disabled={isTyping} 
-                  style={{ 
-                    background: C.goldLine, color: C.bg, border: "none", borderRadius: 8, 
-                    padding: "0 14px", fontSize: 14, fontWeight: 700, cursor: "pointer",
-                    opacity: isTyping ? 0.5 : 1, transition: "background .2s"
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = C.gold}
-                  onMouseLeave={e => e.currentTarget.style.background = C.goldLine}>
-                  ↑
-                </button>
+                <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendChat()} placeholder={`Minta saran Clod [${chatMode}]...`} disabled={isTyping} style={{ ...S.input, flex: 1, fontSize: 12, opacity: isTyping ? 0.5 : 1, padding: "8px 12px", borderRadius: 8 }} />
+                <button onClick={sendChat} disabled={isTyping} style={{ background: C.goldLine, color: C.ink, border: "none", borderRadius: 8, padding: "0 14px", fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: isTyping ? 0.5 : 1 }}>↑</button>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -3504,6 +3540,93 @@ function ProfilePage({ progress }) {
             </div>
           </div>
         )}
+
+        {/* DAILY HEATMAP */}
+        <div style={{ ...S.card }}>
+          <div style={{ ...S.flexBetween, marginBottom: 14 }}>
+            <div style={S.label}>Daily Progress Heatmap</div>
+            <div style={{ fontSize: 10, color: C.muted }}>26 Hari</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(13, 1fr)", gap: 4 }}>
+            {CURRICULUM.map(d => {
+              const p = progress[d.day] || { tasks: {} };
+              const done = Object.values(p.tasks).filter(Boolean).length;
+              const total = d.tasks.length;
+              const pct = total > 0 ? (done / total) * 100 : 0;
+              const isToday = d.day === curDay;
+              const bg = pct >= 100 ? C.up : pct >= 60 ? C.gold : pct >= 20 ? C.warn : "rgba(240,238,233,0.05)";
+              return (
+                <div key={d.day} title={`D${d.day}: ${d.title} — ${Math.round(pct)}%`} style={{
+                  aspectRatio: "1", borderRadius: 4, background: bg, opacity: pct > 0 ? 1 : 0.3,
+                  border: `1px solid ${isToday ? C.gold : "transparent"}`, boxShadow: isToday ? `0 0 8px ${C.gold}44` : "none",
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "rgba(0,0,0,0.6)", fontWeight: 700
+                }}>{d.day}</div>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", gap: 12, marginTop: 10, fontSize: 9, color: C.muted }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: C.up }} /> Done</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: C.gold }} /> Partial</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: C.warn }} /> Started</div>
+          </div>
+        </div>
+
+        {/* WEEKLY BREAKDOWN */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="resp-grid-4-2">
+          <div style={{ ...S.card }}>
+            <div style={{ ...S.label, marginBottom: 12 }}>Weekly Breakdown</div>
+            {[1,2,3,4].map(w => {
+              const days = CURRICULUM.filter(d => d.day >= (w-1)*7+1 && d.day <= w*7);
+              const done = days.reduce((a, d) => a + Object.values(progress[d.day]?.tasks || {}).filter(Boolean).length, 0);
+              const total = days.reduce((a, d) => a + d.tasks.length, 0);
+              const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+              return (
+                <div key={w} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <div style={{ fontSize: 10, color: C.muted, width: 20, flexShrink: 0 }}>W{w}</div>
+                  <div style={{ flex: 1, height: 6, background: "rgba(240,238,233,0.06)", borderRadius: 6, overflow: "hidden" }}>
+                    <div style={{ width: `${pct}%`, height: "100%", background: C.gold, borderRadius: 6, transition: "width 0.8s" }} />
+                  </div>
+                  <div style={{ fontSize: 10, color: C.gold, width: 28, textAlign: "right", fontWeight: 600 }}>{pct}%</div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ ...S.card }}>
+            <div style={{ ...S.label, marginBottom: 12 }}>Attendance Stats</div>
+            {[
+              { label: "On Time (started ≥1 task)", val: Object.values(progress).filter(p => Object.values(p.tasks || {}).some(Boolean)).length, color: C.up },
+              { label: "Full Complete (100%)", val: CURRICULUM.filter(d => { const p = progress[d.day]; const dn = Object.values(p?.tasks || {}).filter(Boolean).length; return dn === d.tasks.length && d.tasks.length > 0; }).length, color: C.gold },
+              { label: "Missing (0% done)", val: CURRICULUM.filter(d => d.day < curDay && Object.values(progress[d.day]?.tasks || {}).filter(Boolean).length === 0).length, color: C.down },
+            ].map((item, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: "1px solid rgba(240,238,233,0.04)" }}>
+                <span style={{ fontSize: 10, color: C.muted }}>{item.label}</span>
+                <span style={{ fontFamily: F.display, fontSize: 16, fontWeight: 700, color: item.color }}>{item.val}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* PROGRESS ANALYTICS — task completion per day */}
+        <div style={{ ...S.card }}>
+          <div style={{ ...S.flexBetween, marginBottom: 14 }}>
+            <div style={S.label}>Progress Analytics — Task Completion per Day</div>
+            <span style={{ fontSize: 9, color: C.muted }}>Day {curDay}/26</span>
+          </div>
+          <ResponsiveContainer width="100%" height={160}>
+            <LineChart data={CURRICULUM.map(d => {
+              const p = progress[d.day] || { tasks: {} };
+              const dn = Object.values(p.tasks).filter(Boolean).length;
+              const tt = d.tasks.length;
+              return { day: `D${d.day}`, pct: tt > 0 ? Math.round((dn / tt) * 100) : 0 };
+            })}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(240,238,233,0.05)" />
+              <XAxis dataKey="day" tick={{ fill: C.muted, fontSize: 9, fontFamily: F.body }} interval={2} />
+              <YAxis domain={[0, 100]} tick={{ fill: C.muted, fontSize: 9, fontFamily: F.body }} unit="%" />
+              <Tooltip contentStyle={{ background: "rgba(12,12,14,0.92)", border: `1px solid ${C.goldLine}`, borderRadius: 10, fontSize: 11, fontFamily: F.body }} />
+              <Line type="monotone" dataKey="pct" stroke={C.gold} strokeWidth={2.5} dot={{ fill: C.gold, r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </PageWrapper>
   );
@@ -3720,6 +3843,65 @@ Gunakan bahasa Indonesia. Presisi, tidak berlebihan.`;
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* ANALYTICS CHARTS — Full width below the 2-col layout */}
+        <div style={{ marginTop: 20 }}>
+          {/* Task Completion History Chart */}
+          <div style={{ ...S.card }}>
+            <div style={{ ...S.label, marginBottom: 14 }}>Task Completion History — All Days</div>
+            <ResponsiveContainer width="100%" height={140}>
+              <LineChart data={CURRICULUM.map(d => {
+                const p = progress[d.day] || { tasks: {} };
+                const dn = Object.values(p.tasks).filter(Boolean).length;
+                const tt = d.tasks.length;
+                return { day: `D${d.day}`, pct: tt > 0 ? Math.round((dn / tt) * 100) : 0, done: dn, total: tt };
+              })}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(240,238,233,0.05)" />
+                <XAxis dataKey="day" tick={{ fill: C.muted, fontSize: 9, fontFamily: F.body }} interval={2} />
+                <YAxis domain={[0, 100]} tick={{ fill: C.muted, fontSize: 9, fontFamily: F.body }} unit="%" />
+                <Tooltip contentStyle={{ background: "rgba(12,12,14,0.92)", border: `1px solid ${C.goldLine}`, borderRadius: 10, fontSize: 11, fontFamily: F.body }} formatter={(v) => [`${v}%`, "Selesai"]} />
+                <Line type="monotone" dataKey="pct" stroke={C.gold} strokeWidth={2} dot={{ fill: C.gold, r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Subtes Understanding Bars */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="resp-grid-4-2">
+            {SUBTES.map(s => {
+              const vals = Object.values(progress).map(p => p.understanding?.[s.id] || 0);
+              const avg = vals.filter(v => v > 0).length > 0 ? Math.round(vals.filter(v => v > 0).reduce((a, b) => a + b, 0) / vals.filter(v => v > 0).length) : 0;
+              return (
+                <div key={s.id} style={{ ...S.cardSm }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: s.color }}>{s.short}</div>
+                    <div style={{ fontSize: 10, color: avg > 70 ? C.up : avg > 40 ? C.warn : C.muted, fontWeight: 600 }}>{avg}% avg</div>
+                  </div>
+                  <div style={{ height: 6, background: "rgba(240,238,233,0.06)", borderRadius: 6, overflow: "hidden" }}>
+                    <div style={{ width: `${avg}%`, height: "100%", background: `linear-gradient(90deg, ${s.color}88, ${s.color})`, borderRadius: 6, transition: "width 0.8s" }} />
+                  </div>
+                  <div style={{ fontSize: 9, color: C.faint, marginTop: 4 }}>{s.name}</div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Soal per Day bar */}
+          <div style={{ ...S.card }}>
+            <div style={{ ...S.label, marginBottom: 14 }}>Soal Dikerjakan per Hari</div>
+            <ResponsiveContainer width="100%" height={120}>
+              <LineChart data={CURRICULUM.map(d => {
+                const p = progress[d.day] || {};
+                return { day: `D${d.day}`, soal: p.soalCount || 0 };
+              })}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(240,238,233,0.05)" />
+                <XAxis dataKey="day" tick={{ fill: C.muted, fontSize: 9, fontFamily: F.body }} interval={3} />
+                <YAxis tick={{ fill: C.muted, fontSize: 9, fontFamily: F.body }} />
+                <Tooltip contentStyle={{ background: "rgba(12,12,14,0.92)", border: `1px solid ${C.goldLine}`, borderRadius: 10, fontSize: 11, fontFamily: F.body }} />
+                <Line type="monotone" dataKey="soal" stroke={C.up} strokeWidth={2} dot={{ fill: C.up, r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
@@ -4416,6 +4598,9 @@ export default function App() {
         .app-sidebar:hover .sb-days-list { display:flex !important; }
         @media (max-width:900px) { .app-sidebar { display:none !important; } }
 
+        /* Prevent right-side cutoff */
+        .main-page-content { max-width: calc(100vw - 56px) !important; overflow-x: hidden !important; box-sizing: border-box !important; }
+
         /* Hide default cursor for custom cursor */
         @media (hover: hover) {
           * { cursor: none !important; }
@@ -4426,9 +4611,9 @@ export default function App() {
       <div style={{ position: "relative", zIndex: 1 }} className="noise-overlay">
         {page !== "landing" && <Navbar page={page} setPage={setPage} onBgUpload={setBg} progress={progress} />}
         {page !== "landing" ? (
-          <div style={{ display: "flex", minHeight: "calc(100vh - clamp(52px,6vw,60px))", width: "100%" }}>
+          <div style={{ display: "flex", minHeight: "calc(100vh - clamp(52px,6vw,60px))" }}>
             <ScheduleSidebar page={page} setPage={setPage} progress={progress} />
-            <div className="main-content" style={{ flex: 1, minWidth: 0, marginLeft: 56, transition: "margin-left 0.3s cubic-bezier(0.16,1,0.3,1)", overflowX: "hidden" }}>{renderPage()}</div>
+            <div className="main-content" style={{ flex: 1, minWidth: 0, maxWidth: "calc(100vw - 56px)", marginLeft: 56, overflowX: "hidden", boxSizing: "border-box" }}>{renderPage()}</div>
           </div>
         ) : renderPage()}
       </div>
